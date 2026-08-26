@@ -1,0 +1,93 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+/.artifacts/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# mypy / type checkers
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ---- forensicagent: regeneratable / large artifacts ----
+# Crawled third-party content is local-only.
+/data/
+/seed_docs/
+# RAG database + per-user state (chroma index; rebuild via `rag index-tools`)
+.forensicagent/
+# Chroma persistence if ever pointed inside the repo
+chroma/
+*.sqlite3
+# Per-tool execution outputs (generated each run)
+forensicagent_output/
+# Historical benchmark runs; keep only bench_result/report + goldenset.json.
+/bench/bench_cli/
+/bench/bench_full/
+/bench/bench_scripts/
+# Tool YAML drafts (LLM output - human review pending)
+tools_metadata/_draft/
+/tools_metadata/_failures/
+# Phase 6 evaluation golden set (LLM extracted)
+eval/goldenset/
+# Public evaluation manifests are tracked; downloaded corpora and run output are not.
+/eval/corpus/
+/eval/runs/
+
+# Hostile evidence, private paperwork, and unlicensed reference snapshots stay local.
+test_evi/
+submit/
+reference_parser/

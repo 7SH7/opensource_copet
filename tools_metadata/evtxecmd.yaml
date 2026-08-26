@@ -1,0 +1,74 @@
+tool_id: evtxecmd
+display_name: EvtxECmd
+version_supported: ">=1.0"
+
+category: log_analysis
+subcategory: windows_event_log
+
+applicable_evidence_types:
+  - evtx_log
+
+platform:
+  - windows
+
+input_format:
+  - ext:.evtx
+
+output_format: csv
+output_size_estimate: medium
+parallelizable: true
+estimated_runtime: short
+
+install_check:
+  command: "EvtxECmd.exe"
+  expected_pattern: "EvtxECmd"
+
+command_templates:
+  - name: "Parse single EVTX to CSV"
+    template: "EvtxECmd.exe -f {evidence_path} --csv {output_dir}"
+    when: "단일 .evtx 파일을 빠르게 파싱. Maps 가 알려진 이벤트 유형은 친절한 PayloadData 컬럼으로 정리."
+  - name: "Parse all EVTX in dir"
+    template: "EvtxECmd.exe -d {evidence_path} --csv {output_dir}"
+    when: "Windows/System32/winevt/Logs 디렉토리 통째로 일괄 처리."
+  - name: "Parse with custom maps"
+    template: "EvtxECmd.exe -f {evidence_path} --maps {maps_path} --csv {output_dir}"
+    when: "사용자 정의 Maps 로 특정 EventID 의 payload 를 더 풍부하게 추출."
+
+usage_description: |
+  EvtxECmd 는 Windows .evtx 이벤트 로그 파서. Eric Zimmerman 의 Maps 시스템
+  으로 알려진 이벤트 유형의 XML payload 를 사람이 읽기 좋은 CSV 컬럼으로
+  정규화한다. chainsaw 가 채널별 Event ID를 빠르게 추출한다면 EvtxECmd 는 raw
+  데이터 추출 + 사람 분석가가 보기 좋은 정규화에 중점. 두 도구는 보완적 -
+  chainsaw 로 알려진 패턴 매칭하고 EvtxECmd 로 모든 로그를 timeline 에
+  넣어 검토. 출력 형식이 CSV 라 Timeline Explorer 와 직접 연계.
+
+suspicious_indicators:
+  - id: rdp_logon_external_ip
+    pattern: "Security/Microsoft-Windows-Security-Auditing EventID 4624 + LogonType=10 + 외부 IP"
+    severity_baseline: high
+    description: "외부 IP 에서의 RDP 로그온 성공"
+  - id: failed_logon_burst
+    pattern: "Security/Microsoft-Windows-Security-Auditing EventID 4625가 동일 주체로 10건 이상"
+    severity_baseline: medium
+    description: "5분 내 반복 실패 후보. 후속 4624 성공 여부를 별도로 확인한다."
+  - id: service_install_4697
+    pattern: "Security-Auditing/4697 또는 System Service Control Manager/7045 + writable ServicePath/ImagePath"
+    severity_baseline: high
+    description: "비표준 경로의 서비스 설치는 흔한 persistence"
+  - id: account_creation_4720
+    pattern: "Security/Microsoft-Windows-Security-Auditing EventID 4720 후 4732 privileged group 추가"
+    severity_baseline: high
+    description: "공격자가 backdoor 계정 생성 후 권한 부여하는 전형 패턴"
+  - id: clear_log_event
+    pattern: "Microsoft-Windows-Eventlog Provider의 Security/1102 또는 System/104"
+    severity_baseline: high
+    description: "로그 삭제 사실은 확인되지만 정상 관리 작업 가능성을 별도로 검증한다."
+
+known_false_positives:
+  - "정상 admin 작업: 로컬 도메인 관리자가 RDP 로 점검 (LogonType=10) 자체는 정상"
+  - "Windows update 가 서비스 임시 설치 (4697) 후 즉시 제거하는 경우"
+  - "같은 Event ID를 사용하는 다른 Channel/Provider 이벤트는 보안 이벤트가 아님"
+
+reference_urls:
+  - https://github.com/EricZimmerman/evtx
+  - https://github.com/EricZimmerman/evtx/tree/master/evtx/Maps

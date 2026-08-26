@@ -1,0 +1,51 @@
+tool_id: tshark
+display_name: TShark
+version_supported: ">=4.0"
+
+category: network_analysis
+subcategory: packet_metadata
+
+applicable_evidence_types:
+  - pcap
+
+platform:
+  - any
+
+input_format:
+  - ext:.pcap
+  - ext:.pcapng
+  - ext:.cap
+
+output_format: csv
+output_size_estimate: large
+parallelizable: true
+estimated_runtime: medium
+
+install_check:
+  command: "tshark --version"
+  expected_pattern: "TShark"
+
+command_templates:
+  - name: "Extract bounded packet metadata fields"
+    template: "tshark -n -r {evidence_path} -T fields -E header=y -E separator=, -E quote=d -E occurrence=f -e frame.time_epoch -e frame.protocols -e ip.src -e ipv6.src -e ip.dst -e ipv6.dst -e tcp.srcport -e tcp.dstport -e udp.srcport -e udp.dstport -e dns.qry.name -e dns.txt -e http.host -e http.request.uri -e tls.handshake.extensions_server_name"
+    when: "A single inventoried pcap/pcapng capture is selected."
+
+usage_description: |
+  TShark reads one capture without name resolution and emits selected packet,
+  DNS, HTTP, and TLS metadata as CSV for streaming deterministic analysis.
+
+suspicious_indicators:
+  - id: pcap_suspicious_remote_port
+    pattern: "global destination IP on a commonly abused remote-control port"
+    severity_baseline: medium
+    description: "A packet targets a global address on a commonly abused uncommon port."
+  - id: pcap_long_dns_query
+    pattern: "DNS query or TXT field has an unusually long encoded-looking label"
+    severity_baseline: medium
+    description: "Long DNS data can indicate tunneling or exfiltration and needs validation."
+
+known_false_positives:
+  - "Developer tunnels, non-standard approved services, CDNs, and legitimate long DNS records."
+
+reference_urls:
+  - https://www.wireshark.org/docs/man-pages/tshark.html

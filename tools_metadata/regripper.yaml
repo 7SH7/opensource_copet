@@ -1,0 +1,69 @@
+tool_id: regripper
+display_name: RegRipper
+version_supported: ">=3.0"
+
+category: registry_analysis
+subcategory: windows_hive
+
+applicable_evidence_types:
+  - registry_hive
+
+platform:
+  - windows
+  - linux
+
+input_format:
+  - name:NTUSER.DAT
+  - name:SYSTEM
+  - name:SOFTWARE
+  - name:SECURITY
+  - name:SAM
+
+output_format: text
+output_size_estimate: small
+parallelizable: true
+estimated_runtime: short
+
+install_check:
+  command: "rip --help"
+  expected_pattern: "RegRipper"
+
+command_templates:
+  - name: "User profile sweep (NTUSER.DAT)"
+    template: "rip -r {evidence_path} -p userassist"
+    when: "NTUSER.DAT 의 UserAssist 실행 기록으로 사용자 활동 재구성."
+  - name: "Persistence keys (SYSTEM/SOFTWARE)"
+    template: "rip -r {evidence_path} -p run"
+    when: "Run / RunOnce 같은 자동실행 키로 persistence 메커니즘 탐색."
+  - name: "Service inventory (SYSTEM)"
+    template: "rip -r {evidence_path} -p services"
+    when: "SYSTEM 하이브의 서비스 키. 의심 서비스 식별."
+  - name: "Full profile"
+    template: "rip -r {evidence_path} -f {profile}"
+    when: "프로파일 기반 일괄 처리 (hive 종류에 맞춰 'system'/'software'/'ntuser' 선택)."
+
+usage_description: |
+  RegRipper 는 Windows 레지스트리 하이브에서 forensic 가치 있는 키/값들을
+  플러그인 단위로 추출하는 도구다. 명세 2.4 의 Case A 에 가까운 출력 크기로
+  도구 출력 전체를 LLM 에 직접 투입해도 컨텍스트가 터지지 않는다.
+
+suspicious_indicators:
+  - id: run_key_unusual_binary
+    pattern: "Run/RunOnce 값이 %APPDATA%, %TEMP%, C:\\Users\\Public, 비표준 파일명 (random8.exe 등)"
+    severity_baseline: high
+    description: "사용자/시스템 자동실행에 등록된 의심 바이너리 = 흔한 persistence"
+  - id: userassist_temp_execution
+    pattern: "UserAssist 에 %TEMP% / Downloads 경로의 실행 기록"
+    severity_baseline: medium
+    description: "사용자 쓰기 가능 경로에서 실행된 바이너리; 서명 상태는 별도 검증 필요"
+  - id: service_imagepath_suspicious
+    pattern: "Services 키의 ImagePath 가 임의 경로 + 짧은 (8자 이하) 무작위 이름"
+    severity_baseline: high
+    description: "랜덤 이름 서비스 + 비표준 경로 = 흔한 malware persistence"
+
+known_false_positives:
+  - "관리자가 의도적으로 설치한 OEM/벤더 자동실행 (Dell, Lenovo 등)"
+  - "정상 서비스의 ImagePath 가 일시적으로 path-with-args 로 보이는 경우"
+
+reference_urls:
+  - https://github.com/keydet89/RegRipper3.0

@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions: {}
+
+env:
+  PYTHONUTF8: "1"
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Python ${{ matrix.python-version }} / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            python-version: "3.10"
+          - os: windows-latest
+            python-version: "3.14"
+          - os: ubuntu-latest
+            python-version: "3.12"
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install libmagic on Linux
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes libmagic1
+
+      - name: Install core and development dependencies
+        run: python -m pip install --editable ".[dev]"
+
+      - name: Check installed dependencies
+        run: python -m pip check
+
+      - name: Audit installed dependencies
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
+        run: python -m pip_audit --local --skip-editable --strict --progress-spinner off
+
+      - name: Lint
+        run: python -m ruff check .
+
+      - name: Test
+        run: python -m pytest --basetemp .pytest_cache/tmp
+
+      - name: Build wheel
+        run: python -m pip wheel . --no-deps --wheel-dir dist
+
+      - name: Install built wheel
+        run: python -c "from pathlib import Path; import subprocess, sys; wheels = list(Path('dist').glob('forensicagent-*.whl')); assert len(wheels) == 1, wheels; subprocess.check_call([sys.executable, '-m', 'pip', 'install', '--force-reinstall', '--no-deps', str(wheels[0])])"
+
+      - name: Import and CLI smoke test outside source tree
+        working-directory: ${{ runner.temp }}
+        run: |
+          python -c "import os; from pathlib import Path; import forensicagent; workspace = Path(os.environ['GITHUB_WORKSPACE']).resolve(); module_path = Path(forensicagent.__file__).resolve(); assert workspace not in module_path.parents, module_path; assert not (module_path.parent / 'builtin_tools' / '_failures').exists(); print(forensicagent.__version__, module_path)"
+          python -c "from importlib.resources import files; from forensicagent.tools import load_all_tools; tools = load_all_tools(); packaged = {p.stem for p in files('forensicagent.builtin_tools').iterdir() if p.name.endswith('.yaml')}; assert set(tools) == packaged, (sorted(tools), sorted(packaged)); assert 'appcompatcacheparser' in tools; print('builtin tools:', ', '.join(sorted(tools)))"
+          python -m forensicagent --version
+          python -m forensicagent doctor --skip-optional

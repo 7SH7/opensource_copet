@@ -1,0 +1,55 @@
+tool_id: gitleaks
+display_name: Gitleaks
+version_supported: "8.30.0 (8.30.1 excluded: upstream #2170)"
+
+category: code_security
+subcategory: secret_scanning
+
+applicable_evidence_types:
+  - source_code_python
+  - source_code_javascript
+  - source_code_generic
+  - text_log
+  - text_document
+
+platform:
+  - any
+
+input_format:
+  - any
+output_format: csv
+output_size_estimate: small
+parallelizable: true
+estimated_runtime: short
+
+install_check:
+  command: "gitleaks version"
+  expected_pattern: "8.30.0"
+
+command_templates:
+  - name: "Filesystem secret scan (no git history)"
+    template: "gitleaks detect --no-git --source {evidence_path} --ignore-gitleaks-allow --gitleaks-ignore-path {output_dir} --redact --report-format csv --report-path {output_dir}/gitleaks.csv --exit-code 0"
+    when: "git history 없이 작업 트리만 — 단일 파일 또는 디렉토리에서 API 키, AWS/GCP/Azure 자격증명, JWT, private key 같은 시크릿 패턴 탐지. --exit-code 0 으로 finding 있어도 exit 0."
+
+usage_description: |
+  Gitleaks 는 코드/문서/로그에서 노출된 시크릿 (API 키, AWS 액세스 키,
+  GCP 서비스 계정 JSON, GitHub 토큰, Slack 웹훅, JWT, 개인 SSH 키 등) 을
+  150+ 정규식 룰셋으로 탐지한다. --no-git 옵션은 git 히스토리를 보지 않고
+  현재 파일 시스템만 스캔.
+
+  출력은 CSV이고 각 행은 RuleID, File, StartLine, EndLine, Match,
+  Secret, Commit (no-git 시 빈 값) 필드를 가진다. --redact 로 탐지된
+  시크릿 원문은 보고서에 남기지 않는다.
+
+suspicious_indicators:
+  - id: gitleaks_secret
+    pattern: "CSV 행의 RuleID + File + StartLine"
+    severity_baseline: high
+    description: "코드/로그에 노출된 시크릿. 즉시 회수 및 키 로테이션 필요"
+known_false_positives:
+  - "테스트 픽스처의 가짜 키 (모두 0/1 또는 example.com)"
+  - ".env.example 의 placeholder"
+
+reference_urls:
+  - https://github.com/gitleaks/gitleaks
+  - https://github.com/gitleaks/gitleaks/issues/2170

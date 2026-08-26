@@ -1,0 +1,72 @@
+tool_id: semgrep
+display_name: Semgrep
+version_supported: ">=1.0"
+
+category: code_security
+subcategory: multi_lang_sast
+
+applicable_evidence_types:
+  - source_code_python
+  - source_code_javascript
+  - source_code_generic
+
+platform:
+  - any
+
+input_format:
+  - ext:.py
+  - ext:.pyi
+  - ext:.js
+  - ext:.jsx
+  - ext:.ts
+  - ext:.tsx
+  - ext:.mjs
+  - ext:.cjs
+  - ext:.java
+  - ext:.go
+  - ext:.rb
+  - ext:.php
+  - ext:.c
+  - ext:.h
+  - ext:.cpp
+  - ext:.hpp
+  - ext:.rs
+  - ext:.cs
+  - ext:.kt
+  - ext:.swift
+output_format: json
+output_size_estimate: medium
+parallelizable: true
+estimated_runtime: medium
+
+install_check:
+  command: "semgrep --version"
+  expected_pattern: "."
+
+command_templates:
+  - name: "Auto ruleset on single file (JSON)"
+    template: "semgrep --config=auto --json --quiet --disable-nosem --no-git-ignore {evidence_path}"
+    when: "Semgrep Registry 의 자동 룰셋 (언어별 OWASP/CWE/secret 등) 으로 단일 파일 스캔. --error 빠진 건 의도 — finding 있어도 exit 0 으로 (forensicagent 는 게이트가 아니라 데이터 수집)."
+
+usage_description: |
+  Semgrep 는 multi-language 정적 분석 도구로, 패턴이 코드와 동일한 추상
+  문법 트리에서 매칭된다는 점에서 grep 보다 정확하다. --config=auto 는
+  파일 언어를 감지해 Registry 의 적합 룰셋 (p/owasp, p/cwe-top-25, p/secrets,
+  p/jwt 등) 을 자동 선택한다.
+
+  출력은 JSON 의 "results" 배열이고 각 항목은 check_id, path, start.line,
+  end.line, message, severity (INFO|WARNING|ERROR), extra.metadata.cwe 등을
+  가진다.
+
+suspicious_indicators:
+  - id: semgrep_issue
+    pattern: "results[*] 의 check_id, message, severity"
+    severity_baseline: medium
+    description: "Semgrep 가 보고한 정적 분석 룰 매칭"
+known_false_positives:
+  - "프레임워크가 자체 sanitize 하는 부분 (Django ORM, Express helmet 등)"
+  - "테스트/문서용 예제 코드의 의도된 안티패턴"
+
+reference_urls:
+  - https://semgrep.dev/
+  - https://semgrep.dev/explore

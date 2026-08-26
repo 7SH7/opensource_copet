@@ -1,0 +1,146 @@
+{
+  "_meta": {
+    "note": "SYNTHETIC, hand-labeled English golden set. NOT real CTF cases. Labels are one analyst's judgement of tool relevance per case (2=core, 1=secondary, 0=irrelevant-but-eligible). Only tools that pass the deterministic evidence-type gate can appear, so labels cover exactly the eligible set for each case. Purpose: measure Selector ORDERING quality, not qualification.",
+    "grades": {"2": "core", "1": "secondary", "0": "irrelevant"},
+    "tools_covered": ["chainsaw", "evtxecmd", "volatility3", "regripper", "recmd", "amcacheparser", "mftecmd", "pecmd", "bandit", "semgrep", "gitleaks"]
+  },
+  "cases": [
+    {
+      "id": "logon-bruteforce-evtx",
+      "description": "Brute-force RDP logons in Windows event logs",
+      "scenario": "Investigate repeated failed logons followed by a successful logon (possible RDP brute force).",
+      "evidence": [
+        {"evidence_type": "evtx_log", "filename": "Security.evtx"},
+        {"evidence_type": "evtx_log", "filename": "System.evtx"}
+      ],
+      "labels": {"chainsaw": 2, "evtxecmd": 1}
+    },
+    {
+      "id": "powershell-scriptblock",
+      "description": "Encoded PowerShell script block execution",
+      "scenario": "Find encoded or obfuscated PowerShell script block logging (event 4104).",
+      "evidence": [
+        {"evidence_type": "evtx_log", "filename": "Microsoft-Windows-PowerShell%4Operational.evtx"}
+      ],
+      "labels": {"chainsaw": 2, "evtxecmd": 1}
+    },
+    {
+      "id": "evtx-service-install",
+      "description": "Malicious service installation in event log",
+      "scenario": "Detect suspicious service installation (event 7045) indicating persistence.",
+      "evidence": [
+        {"evidence_type": "evtx_log", "filename": "System.evtx"}
+      ],
+      "labels": {"chainsaw": 2, "evtxecmd": 1}
+    },
+    {
+      "id": "evtx-no-scenario",
+      "description": "Event log triage with no scenario hint",
+      "scenario": null,
+      "evidence": [
+        {"evidence_type": "evtx_log", "filename": "Security.evtx"}
+      ],
+      "labels": {"chainsaw": 2, "evtxecmd": 1}
+    },
+    {
+      "id": "registry-runkey-persistence",
+      "description": "Registry Run-key persistence",
+      "scenario": "Identify persistence via registry Run keys and autostart entries.",
+      "evidence": [
+        {"evidence_type": "registry_hive", "filename": "NTUSER.DAT"},
+        {"evidence_type": "registry_hive", "filename": "SOFTWARE"},
+        {"evidence_type": "registry_hive", "filename": "SYSTEM"}
+      ],
+      "labels": {"regripper": 2, "recmd": 2}
+    },
+    {
+      "id": "amcache-program-execution",
+      "description": "Program execution from Amcache",
+      "scenario": "Determine which programs executed on the host (program execution artifacts).",
+      "evidence": [
+        {"evidence_type": "registry_hive", "filename": "Amcache.hve"}
+      ],
+      "labels": {"amcacheparser": 2}
+    },
+    {
+      "id": "registry-usb-history",
+      "description": "USB device history from registry",
+      "scenario": "Determine USB storage device history and mounted volumes from the registry.",
+      "evidence": [
+        {"evidence_type": "registry_hive", "filename": "SYSTEM"},
+        {"evidence_type": "registry_hive", "filename": "SOFTWARE"}
+      ],
+      "labels": {"regripper": 2, "recmd": 1}
+    },
+    {
+      "id": "memory-implant-triage",
+      "description": "Memory image triage",
+      "scenario": "Triage a memory image for malicious processes, injected code, and network connections.",
+      "evidence": [
+        {"evidence_type": "memory_dump", "filename": "memdump.raw"}
+      ],
+      "labels": {"volatility3": 2}
+    },
+    {
+      "id": "prefetch-execution-timeline",
+      "description": "Program execution from prefetch",
+      "scenario": "Establish a program execution timeline from Windows prefetch files.",
+      "evidence": [
+        {"evidence_type": "prefetch", "filename": "SVCHOST.EXE-1A2B3C4D.pf"},
+        {"evidence_type": "prefetch", "filename": "CMD.EXE-9F8E7D6C.pf"}
+      ],
+      "labels": {"pecmd": 2}
+    },
+    {
+      "id": "disk-mft-timeline",
+      "description": "Filesystem timeline from MFT",
+      "scenario": "Build a filesystem timeline and find recently created executables from the MFT.",
+      "evidence": [
+        {"evidence_type": "ntfs_metadata", "filename": "$MFT"}
+      ],
+      "labels": {"mftecmd": 2}
+    },
+    {
+      "id": "python-vuln-scan",
+      "description": "Static vulnerability scan of Python source",
+      "scenario": "Statically analyze Python source code for security vulnerabilities.",
+      "evidence": [
+        {"evidence_type": "source_code_python", "filename": "app.py"},
+        {"evidence_type": "source_code_python", "filename": "models.py"}
+      ],
+      "labels": {"bandit": 2, "semgrep": 2, "gitleaks": 1}
+    },
+    {
+      "id": "secrets-leak-scan",
+      "description": "Hardcoded secret detection",
+      "scenario": "Find hardcoded credentials and leaked API keys in the source tree.",
+      "evidence": [
+        {"evidence_type": "source_code_python", "filename": "settings.py"},
+        {"evidence_type": "source_code_python", "filename": "db.py"}
+      ],
+      "labels": {"gitleaks": 2, "bandit": 1, "semgrep": 1}
+    },
+    {
+      "id": "js-security-audit",
+      "description": "JavaScript security audit",
+      "scenario": "Audit JavaScript source for injection flaws and unsafe patterns.",
+      "evidence": [
+        {"evidence_type": "source_code_javascript", "filename": "server.js"},
+        {"evidence_type": "source_code_javascript", "filename": "routes.js"}
+      ],
+      "labels": {"semgrep": 2, "gitleaks": 1}
+    },
+    {
+      "id": "mixed-intrusion-triage",
+      "description": "Full-host intrusion triage",
+      "scenario": "Full intrusion triage: logon anomalies in event logs, registry persistence, and in-memory implants.",
+      "evidence": [
+        {"evidence_type": "evtx_log", "filename": "Security.evtx"},
+        {"evidence_type": "registry_hive", "filename": "SYSTEM"},
+        {"evidence_type": "registry_hive", "filename": "NTUSER.DAT"},
+        {"evidence_type": "memory_dump", "filename": "memdump.raw"}
+      ],
+      "labels": {"chainsaw": 2, "volatility3": 2, "regripper": 2, "recmd": 1, "evtxecmd": 1}
+    }
+  ]
+}

@@ -1,0 +1,660 @@
+{
+  "config": {
+    "scope": "tool-selection ranking only; not end-to-end detection accuracy",
+    "host_contract": "Windows-only official benchmark",
+    "n_cases": 14,
+    "n_tools": 11,
+    "ks": [
+      3,
+      5
+    ],
+    "modes": [
+      "deterministic",
+      "rag"
+    ],
+    "llm_note": "LLM modes not requested (--with-llm off).",
+    "rag_used_cases": 3
+  },
+  "index": {
+    "rebuilt": true,
+    "tools_indexed": 11,
+    "embedding_ms": 43094,
+    "chroma_ms": 716,
+    "elapsed_s": 48.26,
+    "errors": [],
+    "freshness_verified": true,
+    "freshness_contract": "tool-documents-sha256-v1",
+    "tool_documents_sha256": "291b124da08be965087aaebcd2ace4d27da328d74aeb023254179b0e94344a4a"
+  },
+  "reproducibility": {
+    "generated_at_utc": "2026-08-19T11:58:52Z",
+    "host": {
+      "os": "Windows",
+      "release": "11",
+      "machine": "AMD64"
+    },
+    "python": {
+      "implementation": "CPython",
+      "version": "3.12.4"
+    },
+    "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+    "rag_top_k": 5,
+    "rag_min_similarity": 0.25,
+    "rag_min_score_margin": 0.1,
+    "golden_sha256": "ece2e16d43a9cbcd0f44cf5885cafd891b46fb2aba37fc5d58f40e0dd1aefe9e",
+    "tool_documents_sha256": "291b124da08be965087aaebcd2ace4d27da328d74aeb023254179b0e94344a4a",
+    "package_versions": {
+      "forensicagent": "0.0.1",
+      "chromadb": "1.5.9",
+      "sentence-transformers": "6.0.0",
+      "torch": "2.13.0",
+      "transformers": "5.15.0",
+      "tokenizers": "0.22.2",
+      "numpy": "2.5.2",
+      "PyYAML": "6.0.3",
+      "ollama": "0.6.2"
+    }
+  },
+  "aggregate": {
+    "deterministic": {
+      "ndcg@3": 0.9294540966,
+      "ndcg@5": 0.9485171755,
+      "mrr": 1.0,
+      "core_mrr": 0.8928571429,
+      "p@3": 0.6428571429,
+      "p@5": 0.4142857143,
+      "r@3": 0.9714285714,
+      "r@5": 1.0,
+      "core_r@3": 0.9523809524,
+      "core_r@5": 1.0
+    },
+    "rag": {
+      "ndcg@3": 0.924193117,
+      "ndcg@5": 0.9441913205,
+      "mrr": 1.0,
+      "core_mrr": 0.8571428571,
+      "p@3": 0.6428571429,
+      "p@5": 0.4142857143,
+      "r@3": 0.9714285714,
+      "r@5": 1.0,
+      "core_r@3": 0.9523809524,
+      "core_r@5": 1.0
+    }
+  },
+  "delta": {
+    "rag_vs_deterministic": {
+      "ndcg@3": -0.0052609796,
+      "ndcg@5": -0.004325855,
+      "mrr": 0.0,
+      "core_mrr": -0.0357142857,
+      "p@3": 0.0,
+      "p@5": 0.0,
+      "r@3": 0.0,
+      "r@5": 0.0,
+      "core_r@3": 0.0,
+      "core_r@5": 0.0
+    }
+  },
+  "timing_ms": {
+    "deterministic": {
+      "select_filter": 0.0,
+      "select_rag": 0.0,
+      "select_rank": 0.0
+    },
+    "rag": {
+      "select_filter": 0.0,
+      "select_rag": 220.71,
+      "select_rank": 0.0
+    }
+  },
+  "per_case": [
+    {
+      "id": "logon-bruteforce-evtx",
+      "n_eligible": 2,
+      "scenario": true,
+      "modes": {
+        "deterministic": {
+          "order": [
+            "chainsaw",
+            "evtxecmd"
+          ],
+          "ndcg@3": 1.0,
+          "p@3": 0.6666666667,
+          "r@3": 1.0,
+          "ndcg@5": 1.0,
+          "p@5": 0.4,
+          "r@5": 1.0,
+          "mrr": 1.0,
+          "core_mrr": 1.0,
+          "core_r@3": 1.0,
+          "core_r@5": 1.0
+        },
+        "rag": {
+          "order": [
+            "chainsaw",
+            "evtxecmd"
+          ],
+          "ndcg@3": 1.0,
+          "p@3": 0.6666666667,
+          "r@3": 1.0,
+          "ndcg@5": 1.0,
+          "p@5": 0.4,
+          "r@5": 1.0,
+          "mrr": 1.0,
+          "core_mrr": 1.0,
+          "core_r@3": 1.0,
+          "core_r@5": 1.0
+        }
+      }
+    },
+    {
+      "id": "powershell-scriptblock",
+      "n_eligible": 2,
+      "scenario": true,
+      "modes": {
+        "deterministic": {
+          "order": [
+            "chainsaw",
+            "evtxecmd"
+          ],
+          "ndcg@3": 1.0,
+          "p@3": 0.6666666667,
+          "r@3": 1.0,
+          "ndcg@5": 1.0,
+          "p@5": 0.4,
+          "r@5": 1.0,
+          "mrr": 1.0,
+          "core_mrr": 1.0,
+          "core_r@3": 1.0,
+          "core_r@5": 1.0
+        },
+        "rag": {
+          "order": [
+            "chainsaw",
+            "evtxecmd"
+          ],
+          "ndcg@3": 1.0,
+          "p@3": 0.6666666667,
+          "r@3": 1.0,
+          "ndcg@5": 1.0,
+          "p@5": 0.4,
+          "r@5": 1.0,
+          "mrr": 1.0,
+          "core_mrr": 1.0,
+          "core_r@3": 1.0,
+          "core_r@5": 1.0
+        }
+      }
+    },
+    {
+      "id": "evtx-service-install",
+      "n_eligible": 2,
+      "scenario": true,
+      "modes": {
+        "deterministic": {
+          "order": [
+            "chainsaw",
+            "evtxecmd"
+          ],
+          "ndcg@3": 1.0,
+          "p@3": 0.6666666667,
+          "r@3": 1.0,
+          "ndcg@5": 1.0,
+          "p@5": 0.4,
+          "r@5": 1.0,
+          "mrr": 1.0,
+          "core_mrr": 1.0,
+          "core_r@3": 1.0,
+          "core_r@5": 1.0
+        },
+        "rag": {
+          "order": [
+            "chainsaw",
+            "evtxecmd"
+          ],
+          "ndcg@3": 1.0,
+          "p@3": 0.6666666667,
+          "r@3": 1.0,
+          "ndcg@5": 1.0,
+          "p@5": 0.4,
+          "r@5": 1.0,
+          "mrr": 1.0,
+          "core_mrr": 1.0,
+          "core_r@3": 1.0,
+          "core_r@5": 1.0
+        }
+      }
+    },
+    {
+      "id": "evtx-no-scenario",
+      "n_eligible": 2,
+      "scenario": false,
+      "modes": {
+        "deterministic": {
+          "order": [
+            "chainsaw",
+            "evtxecmd"
+          ],
+          "ndcg@3": 1.0,
+          "p@3": 0.6666666667,
+          "r@3": 1.0,
+          "ndcg@5": 1.0,
+          "p@5": 0.4,
+          "r@5": 1.0,
+          "mrr": 1.0,
+          "core_mrr": 1.0,
+          "core_r@3": 1.0,
+          "core_r@5": 1.0
+        },
+        "rag": {
+          "order": [
+            "chainsaw",
+            "evtxecmd"
+          ],
+          "ndcg@3": 1.0,
+          "p@3": 0.6666666667,
+          "r@3": 1.0,
+          "ndcg@5": 1.0,
+          "p@5": 0.4,
+          "r@5": 1.0,
+          "mrr": 1.0,
+          "core_mrr": 1.0,
+          "core_r@3": 1.0,
+          "core_r@5": 1.0
+        }
+      }
+    },
+    {
+      "id": "registry-runkey-persistence",
+      "n_eligible": 2,
+      "scenario": true,
+      "modes": {
+        "deterministic": {
+          "order": [
+            "recmd",
+            "regripper"
+          ],
+          "ndcg@3": 1.0,
+          "p@3": 0.6666666667,
+          "r@3": 1.0,
+          "ndcg@5": 1.0,
+          "p@5": 0.4,
+          "r@5": 1.0,
+          "mrr": 1.0,
+          "core_mrr": 1.0,
+          "core_r@3": 1.0,
+          "core_r@5": 1.0
+        },
+        "rag": {
+          "order": [
+            "recmd",
+            "regripper"
+          ],
+          "ndcg@3": 1.0,
+          "p@3": 0.6666666667,
+          "r@3": 1.0,
+          "ndcg@5": 1.0,
+          "p@5": 0.4,
+          "r@5": 1.0,
+          "mrr": 1.0,
+          "core_mrr": 1.0,
+          "core_r@3": 1.0,
+          "core_r@5": 1.0
+        }
+      }
+    },
+    {
+      "id": "amcache-program-execution",
+      "n_eligible": 1,
+      "scenario": true,
+      "modes": {
+        "deterministic": {
+          "order": [
+            "amcacheparser"
+          ],
+          "ndcg@3": 1.0,
+          "p@3": 0.3333333333,
+          "r@3": 1.0,
+          "ndcg@5": 1.0,
+          "p@5": 0.2,
+          "r@5": 1.0,
+          "mrr": 1.0,
+          "core_mrr": 1.0,
+          "core_r@3": 1.0,
+          "core_r@5": 1.0
+        },
+        "rag": {
+          "order": [
+            "amcacheparser"
+          ],
+          "ndcg@3": 1.0,
+          "p@3": 0.3333333333,
+          "r@3": 1.0,
+          "ndcg@5": 1.0,
+          "p@5": 0.2,
+          "r@5": 1.0,
+          "mrr": 1.0,
+          "core_mrr": 1.0,
+          "core_r@3": 1.0,
+          "core_r@5": 1.0
+        }
+      }
+    },
+    {
+      "id": "registry-usb-history",
+      "n_eligible": 2,
+      "scenario": true,
+      "modes": {
+        "deterministic": {
+          "order": [
+            "recmd",
+            "regripper"
+          ],
+          "ndcg@3": 0.796707581,
+          "p@3": 0.6666666667,
+          "r@3": 1.0,
+          "ndcg@5": 0.796707581,
+          "p@5": 0.4,
+          "r@5": 1.0,
+          "mrr": 1.0,
+          "core_mrr": 0.5,
+          "core_r@3": 1.0,
+          "core_r@5": 1.0
+        },
+        "rag": {
+          "order": [
+            "recmd",
+            "regripper"
+          ],
+          "ndcg@3": 0.796707581,
+          "p@3": 0.6666666667,
+          "r@3": 1.0,
+          "ndcg@5": 0.796707581,
+          "p@5": 0.4,
+          "r@5": 1.0,
+          "mrr": 1.0,
+          "core_mrr": 0.5,
+          "core_r@3": 1.0,
+          "core_r@5": 1.0
+        }
+      }
+    },
+    {
+      "id": "memory-implant-triage",
+      "n_eligible": 1,
+      "scenario": true,
+      "modes": {
+        "deterministic": {
+          "order": [
+            "volatility3"
+          ],
+          "ndcg@3": 1.0,
+          "p@3": 0.3333333333,
+          "r@3": 1.0,
+          "ndcg@5": 1.0,
+          "p@5": 0.2,
+          "r@5": 1.0,
+          "mrr": 1.0,
+          "core_mrr": 1.0,
+          "core_r@3": 1.0,
+          "core_r@5": 1.0
+        },
+        "rag": {
+          "order": [
+            "volatility3"
+          ],
+          "ndcg@3": 1.0,
+          "p@3": 0.3333333333,
+          "r@3": 1.0,
+          "ndcg@5": 1.0,
+          "p@5": 0.2,
+          "r@5": 1.0,
+          "mrr": 1.0,
+          "core_mrr": 1.0,
+          "core_r@3": 1.0,
+          "core_r@5": 1.0
+        }
+      }
+    },
+    {
+      "id": "prefetch-execution-timeline",
+      "n_eligible": 1,
+      "scenario": true,
+      "modes": {
+        "deterministic": {
+          "order": [
+            "pecmd"
+          ],
+          "ndcg@3": 1.0,
+          "p@3": 0.3333333333,
+          "r@3": 1.0,
+          "ndcg@5": 1.0,
+          "p@5": 0.2,
+          "r@5": 1.0,
+          "mrr": 1.0,
+          "core_mrr": 1.0,
+          "core_r@3": 1.0,
+          "core_r@5": 1.0
+        },
+        "rag": {
+          "order": [
+            "pecmd"
+          ],
+          "ndcg@3": 1.0,
+          "p@3": 0.3333333333,
+          "r@3": 1.0,
+          "ndcg@5": 1.0,
+          "p@5": 0.2,
+          "r@5": 1.0,
+          "mrr": 1.0,
+          "core_mrr": 1.0,
+          "core_r@3": 1.0,
+          "core_r@5": 1.0
+        }
+      }
+    },
+    {
+      "id": "disk-mft-timeline",
+      "n_eligible": 1,
+      "scenario": true,
+      "modes": {
+        "deterministic": {
+          "order": [
+            "mftecmd"
+          ],
+          "ndcg@3": 1.0,
+          "p@3": 0.3333333333,
+          "r@3": 1.0,
+          "ndcg@5": 1.0,
+          "p@5": 0.2,
+          "r@5": 1.0,
+          "mrr": 1.0,
+          "core_mrr": 1.0,
+          "core_r@3": 1.0,
+          "core_r@5": 1.0
+        },
+        "rag": {
+          "order": [
+            "mftecmd"
+          ],
+          "ndcg@3": 1.0,
+          "p@3": 0.3333333333,
+          "r@3": 1.0,
+          "ndcg@5": 1.0,
+          "p@5": 0.2,
+          "r@5": 1.0,
+          "mrr": 1.0,
+          "core_mrr": 1.0,
+          "core_r@3": 1.0,
+          "core_r@5": 1.0
+        }
+      }
+    },
+    {
+      "id": "python-vuln-scan",
+      "n_eligible": 3,
+      "scenario": true,
+      "modes": {
+        "deterministic": {
+          "order": [
+            "bandit",
+            "gitleaks",
+            "semgrep"
+          ],
+          "ndcg@3": 0.951442659,
+          "p@3": 1.0,
+          "r@3": 1.0,
+          "ndcg@5": 0.951442659,
+          "p@5": 0.6,
+          "r@5": 1.0,
+          "mrr": 1.0,
+          "core_mrr": 1.0,
+          "core_r@3": 1.0,
+          "core_r@5": 1.0
+        },
+        "rag": {
+          "order": [
+            "gitleaks",
+            "semgrep",
+            "bandit"
+          ],
+          "ndcg@3": 0.8145672023,
+          "p@3": 1.0,
+          "r@3": 1.0,
+          "ndcg@5": 0.8145672023,
+          "p@5": 0.6,
+          "r@5": 1.0,
+          "mrr": 1.0,
+          "core_mrr": 0.5,
+          "core_r@3": 1.0,
+          "core_r@5": 1.0
+        }
+      }
+    },
+    {
+      "id": "secrets-leak-scan",
+      "n_eligible": 3,
+      "scenario": true,
+      "modes": {
+        "deterministic": {
+          "order": [
+            "bandit",
+            "gitleaks",
+            "semgrep"
+          ],
+          "ndcg@3": 0.8213137146,
+          "p@3": 1.0,
+          "r@3": 1.0,
+          "ndcg@5": 0.8213137146,
+          "p@5": 0.6,
+          "r@5": 1.0,
+          "mrr": 1.0,
+          "core_mrr": 0.5,
+          "core_r@3": 1.0,
+          "core_r@5": 1.0
+        },
+        "rag": {
+          "order": [
+            "gitleaks",
+            "semgrep",
+            "bandit"
+          ],
+          "ndcg@3": 1.0,
+          "p@3": 1.0,
+          "r@3": 1.0,
+          "ndcg@5": 1.0,
+          "p@5": 0.6,
+          "r@5": 1.0,
+          "mrr": 1.0,
+          "core_mrr": 1.0,
+          "core_r@3": 1.0,
+          "core_r@5": 1.0
+        }
+      }
+    },
+    {
+      "id": "js-security-audit",
+      "n_eligible": 2,
+      "scenario": true,
+      "modes": {
+        "deterministic": {
+          "order": [
+            "gitleaks",
+            "semgrep"
+          ],
+          "ndcg@3": 0.796707581,
+          "p@3": 0.6666666667,
+          "r@3": 1.0,
+          "ndcg@5": 0.796707581,
+          "p@5": 0.4,
+          "r@5": 1.0,
+          "mrr": 1.0,
+          "core_mrr": 0.5,
+          "core_r@3": 1.0,
+          "core_r@5": 1.0
+        },
+        "rag": {
+          "order": [
+            "gitleaks",
+            "semgrep"
+          ],
+          "ndcg@3": 0.796707581,
+          "p@3": 0.6666666667,
+          "r@3": 1.0,
+          "ndcg@5": 0.796707581,
+          "p@5": 0.4,
+          "r@5": 1.0,
+          "mrr": 1.0,
+          "core_mrr": 0.5,
+          "core_r@3": 1.0,
+          "core_r@5": 1.0
+        }
+      }
+    },
+    {
+      "id": "mixed-intrusion-triage",
+      "n_eligible": 5,
+      "scenario": true,
+      "modes": {
+        "deterministic": {
+          "order": [
+            "chainsaw",
+            "evtxecmd",
+            "recmd",
+            "regripper",
+            "volatility3"
+          ],
+          "ndcg@3": 0.6461858173,
+          "p@3": 1.0,
+          "r@3": 0.6,
+          "ndcg@5": 0.9130689212,
+          "p@5": 1.0,
+          "r@5": 1.0,
+          "mrr": 1.0,
+          "core_mrr": 1.0,
+          "core_r@3": 0.3333333333,
+          "core_r@5": 1.0
+        },
+        "rag": {
+          "order": [
+            "recmd",
+            "regripper",
+            "evtxecmd",
+            "chainsaw",
+            "volatility3"
+          ],
+          "ndcg@3": 0.530721274,
+          "p@3": 1.0,
+          "r@3": 0.6,
+          "ndcg@5": 0.8106961231,
+          "p@5": 1.0,
+          "r@5": 1.0,
+          "mrr": 1.0,
+          "core_mrr": 0.5,
+          "core_r@3": 0.3333333333,
+          "core_r@5": 1.0
+        }
+      }
+    }
+  ]
+}

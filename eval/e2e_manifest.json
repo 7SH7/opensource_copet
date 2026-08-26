@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "scope": "end-to-end finding detection accuracy; not tool-selection ranking",
+  "cases": [
+    {
+      "id": "evtx-attack-samples-security-log-cleared-1102",
+      "source_url": "https://github.com/sbousseaden/EVTX-ATTACK-SAMPLES/blob/4ceed2f4706daf601c212a8f91c113dd85349a2c/Defense%20Evasion/DE_1102_security_log_cleared.evtx",
+      "download_url": "https://raw.githubusercontent.com/sbousseaden/EVTX-ATTACK-SAMPLES/4ceed2f4706daf601c212a8f91c113dd85349a2c/Defense%20Evasion/DE_1102_security_log_cleared.evtx",
+      "license": "GPL-3.0",
+      "license_url": "https://github.com/sbousseaden/EVTX-ATTACK-SAMPLES/blob/4ceed2f4706daf601c212a8f91c113dd85349a2c/LICENSE.GPL",
+      "sha256": null,
+      "evidence_path": "evtx-attack-samples/DE_1102_security_log_cleared.evtx",
+      "gold_labels": [
+        "clear_log_event:1102"
+      ],
+      "required_tools": [
+        "chainsaw"
+      ],
+      "notes": "The upstream DFIR sample name labels a Windows Security event-log clear (Event ID 1102). Download manually; the harness never fetches corpus data."
+    }
+  ]
+}

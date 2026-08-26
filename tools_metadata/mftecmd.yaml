@@ -1,0 +1,70 @@
+tool_id: mftecmd
+display_name: MFTECmd
+version_supported: ">=1.0"
+
+category: disk_analysis
+subcategory: ntfs_metadata
+
+applicable_evidence_types:
+  - ntfs_metadata
+
+platform:
+  - windows
+
+input_format:
+  - "name:$MFT"
+  - "name:$J"
+  - "name:$Boot"
+  - "name:$SDS"
+  - "name:$I30"
+  - ext:.mft
+
+output_format: csv
+output_size_estimate: medium
+parallelizable: true
+estimated_runtime: medium
+
+install_check:
+  command: "MFTECmd.exe"
+  expected_pattern: "MFTECmd"
+
+command_templates:
+  - name: "Parse $MFT to CSV"
+    template: "MFTECmd.exe -f {evidence_path} --csv {output_dir}"
+    when: "디스크 이미지에서 추출한 $MFT 파일을 분석할 때. 모든 파일/폴더의 메타데이터 (생성/수정/접근 시각, 크기, attribute) 가 CSV 로 떨어진다."
+  - name: "Parse $J (USN journal)"
+    template: "MFTECmd.exe -f {evidence_path} --csv {output_dir}"
+    when: "USN journal ($J) 분석 - 파일 생성/삭제/리네임 이벤트 타임라인 재구성."
+  - name: "Parse $I30 (directory index)"
+    template: "MFTECmd.exe -f {evidence_path} --csv {output_dir}"
+    when: "$I30 분석 - 삭제된 파일/폴더 흔적 회수 (anti-forensics 우회)."
+
+usage_description: |
+  MFTECmd 는 Eric Zimmerman 의 EZTools 슈트 중 NTFS metadata 파서. $MFT, $J,
+  $Boot, $SDS, $I30 등 NTFS 의 모든 메타데이터 아티팩트를 처리한다. KAPE 가
+  추출한 raw NTFS metadata 파일을 분석할 때 표준 도구. 출력이 CSV 라
+  Timeline Explorer 와 같은 후속 도구로 바로 연계 가능. 명세 2.4 의 Case B
+  (정형이지만 큼) 에 해당 - 수십만 ~ 수백만 row 의 NTFS entry 가 나올 수
+  있으므로 사전 룰 필터 후 LLM 으로 자연어 보강.
+
+suspicious_indicators:
+  - id: deleted_executable_in_temp
+    pattern: "InUse=False, Extension=.exe/.dll, ParentPath 가 %TEMP% / %APPDATA% / Public"
+    severity_baseline: medium
+    description: "사용자 쓰기 경로에서 삭제된 실행파일 기록; 정상 설치·업데이트 정리 가능성을 함께 검증"
+  - id: timestomp_inconsistency
+    pattern: "SI Created > FN Created 또는 SI Modified < SI Created (시간 일관성 깨짐)"
+    severity_baseline: high
+    description: "Timestomp (SetMACE / timestomp.exe) 시도의 강한 신호"
+  - id: ads_alternate_data_stream
+    pattern: "FileName 에 ':' 포함, ADS (Alternate Data Stream) 명세"
+    severity_baseline: medium
+    description: "ADS 는 합법적 사용도 있지만 (Zone.Identifier) 임의 ADS 는 데이터 은닉"
+
+known_false_positives:
+  - "정상 소프트웨어 (Slack, Discord 등) 가 %APPDATA% 에서 자체 업데이트로 실행파일을 임시로 만들었다 지우는 경우"
+  - "Windows update / installer 가 SI/FN 타임스탬프를 의도적으로 조정하는 경우"
+
+reference_urls:
+  - https://github.com/EricZimmerman/MFTECmd
+  - https://ericzimmerman.github.io/

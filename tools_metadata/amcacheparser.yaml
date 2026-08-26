@@ -1,0 +1,60 @@
+tool_id: amcacheparser
+display_name: AmcacheParser
+version_supported: ">=1.0"
+
+category: registry_analysis
+subcategory: amcache
+
+applicable_evidence_types:
+  - registry_hive
+
+platform:
+  - windows
+
+input_format:
+  - name:Amcache.hve
+
+output_format: csv
+output_size_estimate: small
+parallelizable: true
+estimated_runtime: short
+
+install_check:
+  command: "AmcacheParser.exe"
+  expected_pattern: "AmcacheParser"
+
+command_templates:
+  - name: "Parse Amcache.hve to CSV"
+    template: "AmcacheParser.exe -f {evidence_path} --csv {output_dir} -i"
+    when: "Amcache.hve 표준 분석 - 설치 프로그램 + InventoryApplicationFile 의 unassociated entries (정체 불명 실행파일) 모두 추출. -i 는 Programs entries 포함."
+  - name: "Filter by hash blacklist"
+    template: "AmcacheParser.exe -f {evidence_path} --csv {output_dir} -w {known_bad_sha1_list}"
+    when: "TI feed 의 known-bad SHA1 hash 리스트로 필터 - 매칭되는 entry 만 출력."
+
+usage_description: |
+  AmcacheParser 는 Windows Amcache.hve 파서. Amcache 는 Application
+  Compatibility 용 등록 정보지만 forensic 가치는 매우 높다 - 실행된 모든
+  바이너리의 SHA1 해시 + 파일 경로 + 마지막 실행 시각이 기록된다 (PE 자체가
+  삭제돼도 남음). DFIR 핵심 아티팩트 중 하나. 출력 CSV 의 핵심 컬럼:
+  FileKeyLastWriteTimestamp, SHA1, ApplicationName, FullPath, Size.
+  Unassociated entries (Programs 와 매핑 안 된 행) 가 가장 의심 가치 높음 -
+  비공식 설치 프로그램 / portable / malware 가 여기 잡힘.
+
+suspicious_indicators:
+  - id: amcache_unassociated_in_temp
+    pattern: "Unassociated entry + FullPath 가 %TEMP% / %APPDATA% / Public / Downloads"
+    severity_baseline: medium
+    description: "정식 프로그램과 연결되지 않은 사용자 쓰기 경로의 파일 기록; 독립 실행 증거 필요"
+  - id: amcache_credential_dump_tool
+    pattern: "ApplicationName 또는 FullPath가 mimikatz / lazagne / nanodump / sekurlsa / lsassy"
+    severity_baseline: high
+    description: "알려진 자격증명 접근 도구명 기록; Amcache만으로 실행이나 접근 성공은 확정하지 않음"
+
+known_false_positives:
+  - "PowerShell / Sysmon / WSL / WinPE 등 OEM 미서명 정상 도구"
+  - "사용자가 의도적으로 다운로드 후 실행한 portable 유틸리티 (보안 도구, IT 진단 등)"
+  - "Amcache 등록만 존재하고 Prefetch/UserAssist/프로세스 이벤트 등 실행 증거가 없는 경우"
+
+reference_urls:
+  - https://github.com/EricZimmerman/AmcacheParser
+  - https://www.ssi.gouv.fr/uploads/2019/01/anssi-coriin_2019-analysis_amcache.pdf

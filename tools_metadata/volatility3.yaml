@@ -1,0 +1,84 @@
+tool_id: volatility3
+display_name: Volatility 3
+version_supported: ">=2.0"
+
+category: memory_analysis
+subcategory: process_and_network
+
+applicable_evidence_types:
+  - memory_dump
+
+platform:
+  - windows
+  - linux
+  - macos
+
+applicable_evidence_platforms:
+  - windows
+
+input_format:
+  - ext:.raw
+  - ext:.mem
+  - ext:.dmp
+  - ext:.lime
+  - ext:.vmem
+  - ext:.bin
+
+output_format: csv
+output_size_estimate: medium
+parallelizable: false
+estimated_runtime: long
+
+install_check:
+  command: "vol --help"
+  expected_pattern: "Volatility"
+
+command_templates:
+  - name: "Process list (pslist)"
+    template: "vol -q -r csv -f {evidence_path} windows.pslist.PsList"
+    when: "메모리에서 실행 중이던 프로세스 트리 확인. malfind 보다 가볍게 시작."
+  - name: "Process command lines (cmdline)"
+    template: "vol -q -r csv -f {evidence_path} windows.cmdline.CmdLine"
+    when: "프로세스 인자와 실행 경로를 확인해 사용자 쓰기 가능 경로 실행을 탐지."
+  - name: "Network scan (netscan)"
+    template: "vol -q -r csv -f {evidence_path} windows.netscan.NetScan"
+    when: "메모리에서 활성/잔존 네트워크 연결 식별 (의심 외부 IP 통신)."
+  - name: "Malfind injected code"
+    template: "vol -q -r csv -f {evidence_path} windows.malfind.Malfind"
+    when: "프로세스 주소공간에 주입된 코드/PE 헤더 탐색. CPU 무거움."
+  - name: "Pstree parent-child"
+    template: "vol -q -r csv -f {evidence_path} windows.pstree.PsTree"
+    when: "부모-자식 관계의 비정상 패턴 (lsass→cmd 등) 확인."
+
+usage_description: |
+  현재 실행 계획은 Windows Volatility 플러그인만 지원한다. Windows 메모리
+  덤프에서 OS 자료구조를 walk 해 프로세스, 네트워크
+  연결, 인젝션, 핸들, 레지스트리 인메모리 사본 등을 추출하는 표준 도구다.
+  명세 2.4 의 Case B (출력이 정형이지만 큼) 의 전형 — pslist 결과 전체를
+  LLM 에 넣지 말고 rules 로 사전 필터 후 의심 행만 LLM 으로 보낸다.
+
+suspicious_indicators:
+  - id: abnormal_parent_child
+    pattern: "lsass.exe / services.exe / winlogon.exe 의 부모가 wininit.exe / services.exe 가 아닌 경우"
+    severity_baseline: high
+    description: "코어 시스템 프로세스의 부모가 비정상이면 인젝션/리브랜딩 의심"
+  - id: process_in_unusual_path
+    pattern: "프로세스 이미지 경로가 C:\\Users\\Public, %TEMP%, AppData\\Local\\Temp 인 경우"
+    severity_baseline: medium
+    description: "정상 프로세스는 보통 System32/Program Files 에 있다"
+  - id: malfind_pe_in_unbacked_region
+    pattern: "malfind 출력에 'MZ' 또는 PE 헤더가 RX 권한 unbacked 메모리에서 발견"
+    severity_baseline: critical
+    description: "디스크 백킹 없는 메모리의 PE 헤더는 인젝션의 강한 신호"
+  - id: netscan_to_known_bad_or_rare_ip
+    pattern: "외부 IP 와의 ESTABLISHED 또는 LISTENING, 특히 비표준 포트"
+    severity_baseline: medium
+    description: "TI 룩업 없이도 사설 대역 밖 + 임의 포트는 후속 조사 가치"
+
+known_false_positives:
+  - "정상 사용자 프로세스가 AppData 에서 실행 (Slack, Discord 등 chromium 기반)"
+  - "Sysmon / EDR 자체가 PE 패턴을 보이는 메모리 영역"
+
+reference_urls:
+  - https://github.com/volatilityfoundation/volatility3
+  - https://volatility3.readthedocs.io

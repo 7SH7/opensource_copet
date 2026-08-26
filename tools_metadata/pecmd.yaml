@@ -1,0 +1,62 @@
+tool_id: pecmd
+display_name: PECmd
+version_supported: ">=1.0"
+
+category: disk_analysis
+subcategory: prefetch
+
+applicable_evidence_types:
+  - prefetch
+
+platform:
+  - windows
+
+input_format:
+  - ext:.pf
+
+output_format: csv
+output_size_estimate: small
+parallelizable: true
+estimated_runtime: short
+
+install_check:
+  command: "PECmd.exe"
+  expected_pattern: "PECmd"
+
+command_templates:
+  - name: "Parse single prefetch"
+    template: "PECmd.exe -f {evidence_path} --csv {output_dir}"
+    when: "단일 .pf 파일을 분석 - 특정 실행파일의 마지막 8회 실행 시각."
+  - name: "Parse Prefetch directory"
+    template: "PECmd.exe -d {evidence_path} --csv {output_dir} -q"
+    when: "Windows/Prefetch/ 전체 일괄 - 시스템에서 실행된 모든 프로그램 타임라인."
+  - name: "Highlight specific keywords"
+    template: "PECmd.exe -d {evidence_path} -k {keywords} --csv {output_dir}"
+    when: "특정 키워드 (예: 'temp,tmp,public') 가 포함된 prefetch 만 강조 - 의심 실행 빠른 탐색."
+
+usage_description: |
+  PECmd 는 Windows Prefetch (.pf) 파일 파서. Prefetch 는 자주 실행되는
+  프로그램의 로딩 속도 최적화용이지만 forensic 가치는 매우 높다 - 어떤
+  실행파일이, 언제, 몇 번, 어떤 다른 파일을 함께 사용했는지가 기록된다.
+  Windows 10+ 는 MAM 압축이라 단순 hex 로는 못 읽지만 PECmd 가 처리한다.
+  출력 CSV 의 핵심 컬럼: ExecutableName, RunCount, LastRun,
+  FilesLoaded (각 prefetch 당 최대 1024 파일 참조).
+
+suspicious_indicators:
+  - id: prefetch_with_credential_tools
+    pattern: "Prefetch 실행 파일명이 mimikatz / lazagne / nanodump / sekurlsa / lsassy"
+    severity_baseline: high
+    description: "자격증명 접근 도구명 실행 흔적; 접근 성공과 사용 목적은 별도 확인"
+  - id: prefetch_referenced_lsass_dump
+    pattern: "Prefetch FilesLoaded에 lsass*.dmp 덤프 파일명 참조"
+    severity_baseline: high
+    description: "LSASS dump 후보 파일 참조; Prefetch만으로 메모리 접근이나 자격증명 추출을 확정하지 않음"
+
+known_false_positives:
+  - "정상 OS / 사용자 프로세스의 정상 실행 (대다수 prefetch)"
+  - "관리자가 의도적으로 실행한 sysinternals 도구 (procmon, autoruns 등 - 합법 사용)"
+  - "TASKMGR.EXE 등 정상 도구의 LSASS.EXE 파일 참조는 메모리 dump 증거가 아님"
+
+reference_urls:
+  - https://github.com/EricZimmerman/PECmd
+  - https://www.forensicfocus.com/articles/forensic-analysis-of-prefetch-files-in-windows/

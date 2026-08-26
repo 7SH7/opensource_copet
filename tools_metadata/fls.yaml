@@ -1,0 +1,53 @@
+tool_id: fls
+display_name: The Sleuth Kit fls
+version_supported: ">=4.12"
+
+category: disk_analysis
+subcategory: filesystem_listing
+
+applicable_evidence_types:
+  - disk_image
+
+platform:
+  - any
+
+input_format:
+  - ext:.dd
+  - ext:.img
+  - ext:.raw
+  - ext:.e01
+  - ext:.aff
+  - ext:.vhd
+  - ext:.vhdx
+  - ext:.vmdk
+
+output_format: text
+output_size_estimate: large
+parallelizable: false
+estimated_runtime: long
+
+install_check:
+  command: "fls -V"
+  expected_pattern: "The Sleuth Kit"
+
+command_templates:
+  - name: "Recursively list a filesystem image"
+    template: "fls -r -p -l {evidence_path}"
+    when: "The image contains a filesystem at the default image offset."
+
+usage_description: |
+  The Sleuth Kit fls recursively lists allocated and deleted directory entries
+  in one inventoried filesystem image. Partitioned whole-disk images can require
+  an explicit offset and are reported as failed rather than retried with another tool.
+
+suspicious_indicators:
+  - id: fls_deleted_suspicious_file
+    pattern: "deleted executable or script under a temporary or public path"
+    severity_baseline: high
+    description: "A deleted executable/script in a commonly abused path may be anti-forensic residue."
+
+known_false_positives:
+  - "Installer cleanup and normal browser/application update activity."
+
+reference_urls:
+  - https://www.sleuthkit.org/sleuthkit/man/fls.html

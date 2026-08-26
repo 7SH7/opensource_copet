@@ -1,0 +1,43 @@
+tool_id: appcompatcacheparser
+display_name: AppCompatCacheParser
+version_supported: ">=1.4"
+
+category: registry_analysis
+subcategory: shimcache
+
+applicable_evidence_types:
+  - registry_hive
+
+platform:
+  - windows
+
+input_format:
+  - name:SYSTEM
+
+output_format: csv
+output_size_estimate: medium
+parallelizable: true
+estimated_runtime: short
+
+install_check:
+  command: "AppCompatCacheParser.exe"
+  expected_pattern: "AppCompatCache Parser"
+
+command_templates:
+  - name: "Parse offline SYSTEM Shimcache"
+    template: "AppCompatCacheParser.exe -f {evidence_path} --csv {output_dir}"
+    when: "Parse AppCompatCache entries from an inventoried offline SYSTEM hive."
+
+usage_description: |
+  AppCompatCacheParser decodes Shimcache/AppCompatCache records from an offline
+  Windows SYSTEM hive. The normalized path and last-modified timestamp support
+  timeline correlation, but their forensic meaning depends on the Windows
+  version: an entry or timestamp alone must not be described as proof that the
+  program executed.
+
+known_false_positives:
+  - "Legitimate operating-system, installer, updater, and administrative binaries"
+  - "The recorded last-modified value is file metadata, not an execution timestamp"
+
+reference_urls:
+  - https://github.com/EricZimmerman/AppCompatCacheParser

@@ -1,0 +1,83 @@
+tool_id: recmd
+display_name: RECmd
+version_supported: ">=1.0"
+
+category: registry_analysis
+subcategory: windows_hive_batch
+
+applicable_evidence_types:
+  - registry_hive
+
+platform:
+  - windows
+
+input_format:
+  - name:NTUSER.DAT
+  - name:SYSTEM
+  - name:SOFTWARE
+  - name:SECURITY
+  - name:SAM
+  - name:DEFAULT
+  - name:UsrClass.dat
+
+output_format: csv
+output_size_estimate: medium
+parallelizable: true
+estimated_runtime: short
+
+install_check:
+  command: "RECmd.exe"
+  expected_pattern: "RECmd"
+
+command_templates:
+  - name: "Run all batch files on hive"
+    template: "RECmd.exe -f {evidence_path} --bn BatchExamples/RECmd_Batch_MC.reb --csv {output_dir}"
+    when: "Maxim Suhanov 가 정리한 RECmd_Batch_MC 배치 한 번에 돌리는 표준 워크플로 - persistence/execution/user activity 다 한 번에."
+  - name: "Single batch"
+    template: "RECmd.exe -f {evidence_path} --bn {batch_path} --csv {output_dir}"
+    when: "특정 아티팩트만 (예: ShellBags 만, UserAssist 만) 빠르게 보고 싶을 때."
+  - name: "Search for key/value"
+    template: "RECmd.exe -f {evidence_path} --sk {search_key} --csv {output_dir}"
+    when: "특정 키 이름 / 값으로 단일 하이브 검색 (IoC hunting)."
+
+usage_description: |
+  RECmd 는 Registry hive 의 batch 처리 전문 도구. RegRipper 가 plugin 단위
+  Perl 스크립트라면 RECmd 는 RECmd_Batch_*.reb 배치 파일로 한 번에 수십 개
+  키/값을 추출하는 방식. 출력이 CSV 라 Timeline Explorer / pandas / Excel
+  연계 쉬움. KAPE 의 Registry 모듈이 내부적으로 RECmd 를 호출. 동시에 여러
+  하이브 (모든 사용자 NTUSER.DAT + SYSTEM/SOFTWARE) 를 처리할 때 RegRipper
+  보다 일관된 출력 포맷이 장점.
+
+suspicious_indicators:
+  - id: run_key_in_temp_path
+    pattern: "Run / RunOnce / RunServices 값이 %TEMP% / %APPDATA% / Public 으로 가리킴"
+    severity_baseline: high
+    description: "임시 경로 자동실행은 흔한 persistence"
+  - id: service_imagepath_random
+    pattern: "SYSTEM\\CurrentControlSet\\Services 의 ImagePath 가 무작위 8자 이하 이름 + 비표준 경로"
+    severity_baseline: high
+    description: "랜덤 이름 서비스는 malware persistence 전형"
+  - id: image_file_execution_debugger
+    pattern: "접근성 실행파일(sethc/utilman/osk 등)의 IFEO Debugger가 cmd/powershell을 가리킴"
+    severity_baseline: high
+    description: "로그인 화면 접근성 기능을 악용할 수 있는 고위험 persistence 설정; 실행 여부는 별도 확인"
+  - id: applnit_dlls
+    pattern: "Windows\\CurrentVersion\\Windows\\AppInit_DLLs 값에 비표준 DLL"
+    severity_baseline: high
+    description: "모든 user32.dll 로딩 프로세스에 주입되는 persistence"
+  - id: winlogon_shell_modified
+    pattern: "Winlogon\\Shell 이 explorer.exe 외 다른 값으로 변경"
+    severity_baseline: high
+    description: "Explorer 외 shell persistence 설정; 실제 실행과 악성 여부는 별도 확인"
+  - id: userassist_temp_execution
+    pattern: "UserAssist 에 %TEMP% / Downloads 경로의 .exe 실행 기록"
+    severity_baseline: medium
+    description: "사용자 쓰기 가능 경로에서 실행한 바이너리 흔적; 시각과 서명은 별도 검증 필요"
+
+known_false_positives:
+  - "OEM/벤더 (Dell, Lenovo) 의 정상 자동실행 등록"
+  - "사용자가 의도적으로 portable 앱을 AppData 에서 실행한 경우"
+
+reference_urls:
+  - https://github.com/EricZimmerman/RECmd
+  - https://github.com/EricZimmerman/RECmd/tree/master/BatchExamples

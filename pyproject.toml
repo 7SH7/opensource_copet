@@ -1,0 +1,121 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "forensicagent"
+version = "0.0.1"
+description = "Forensic auto-triage CLI agent that selects tools, runs them, and extracts grounded findings."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [
+    { name = "forensicagent contributors" },
+]
+
+dependencies = [
+    "typer>=0.12.0",
+    "rich>=13.7.0",
+    "pyyaml>=6.0",
+    "pydantic>=2.7.0",
+    "python-magic-bin>=0.4.14; sys_platform == 'win32'",
+    "python-magic>=0.4.27; sys_platform != 'win32'",
+    "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+llm = ["ollama>=0.3.0"]
+rag = ["chromadb>=0.5.0", "sentence-transformers>=3.0.0"]
+openai = ["openai>=1.0.0"]
+crawlers = ["requests>=2.31.0", "beautifulsoup4>=4.12.0"]
+dev = [
+    "pytest>=8.0",
+    "pytest-mock>=3.12",
+    "hypothesis==6.165.10",
+    "ruff==0.16.0",
+    "pip-audit==2.10.1",
+    "detect-secrets==1.5.0",
+    "tomli>=2.0; python_version < '3.11'",
+]
+# Portable memory-analysis extra. Other external tools are installed through
+# `forensicagent install`; plaso remains manual on Windows because it needs MSVC.
+forensic-tools = ["volatility3==2.28.0"]
+
+[project.scripts]
+forensicagent = "forensicagent.cli.main:app"
+
+[tool.hatch.build.targets.wheel]
+packages = ["forensicagent", "bench"]
+exclude = [
+    "/bench/bench_cli/**",
+    "/bench/bench_full/**",
+    "/bench/bench_scripts/**",
+    "/bench/bench_report.md",
+    "/bench/bench_result.json",
+]
+
+# Tool YAMLs are runtime assets, not development-only files. Install them
+# inside the package so a wheel works outside a source checkout.
+[tool.hatch.build.targets.wheel.force-include]
+"tools_metadata/amcacheparser.yaml" = "forensicagent/builtin_tools/amcacheparser.yaml"
+"tools_metadata/appcompatcacheparser.yaml" = "forensicagent/builtin_tools/appcompatcacheparser.yaml"
+"tools_metadata/bandit.yaml" = "forensicagent/builtin_tools/bandit.yaml"
+"tools_metadata/browser_sqlite.yaml" = "forensicagent/builtin_tools/browser_sqlite.yaml"
+"tools_metadata/chainsaw.yaml" = "forensicagent/builtin_tools/chainsaw.yaml"
+"tools_metadata/evtxecmd.yaml" = "forensicagent/builtin_tools/evtxecmd.yaml"
+"tools_metadata/fls.yaml" = "forensicagent/builtin_tools/fls.yaml"
+"tools_metadata/gitleaks.yaml" = "forensicagent/builtin_tools/gitleaks.yaml"
+"tools_metadata/mftecmd.yaml" = "forensicagent/builtin_tools/mftecmd.yaml"
+"tools_metadata/pecmd.yaml" = "forensicagent/builtin_tools/pecmd.yaml"
+"tools_metadata/recmd.yaml" = "forensicagent/builtin_tools/recmd.yaml"
+"tools_metadata/regripper.yaml" = "forensicagent/builtin_tools/regripper.yaml"
+"tools_metadata/semgrep.yaml" = "forensicagent/builtin_tools/semgrep.yaml"
+"tools_metadata/tshark.yaml" = "forensicagent/builtin_tools/tshark.yaml"
+"tools_metadata/volatility3.yaml" = "forensicagent/builtin_tools/volatility3.yaml"
+"bench/goldenset.json" = "bench/goldenset.json"
+
+# Crawled corpora are development inputs, not source-distribution assets. In
+# addition to bloating the sdist, their generated filenames can exceed the
+# Windows extraction path limit used by `python -m build`.
+[tool.hatch.build.targets.sdist]
+exclude = [
+    "/.agents/**",
+    "/.claude/**",
+    "/.codex/**",
+    "/.serena/**",
+    "/AGENTS.md",
+    "/CLAUDE.md",
+    "/GUIDELINE.md",
+    "/PROJECT_TOUR.md",
+    "/data/**",
+    "/seed_docs/**",
+    "/test_evi/**",
+    "/submit/**",
+    "/reference_parser/**",
+    "/forensicagent_output/**",
+    "/bench/bench_cli/**",
+    "/bench/bench_full/**",
+    "/bench/bench_scripts/**",
+    "/bench/bench_report.md",
+    "/bench/bench_result.json",
+    "/tools_metadata/_failures/**",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra -q"
+
+[tool.ruff]
+target-version = "py310"
+extend-exclude = [
+    ".agents",
+    ".serena",
+    "data",
+    "seed_docs",
+    "forensicagent_output",
+]
+
+[tool.ruff.lint]
+# Start with correctness gates that pass the existing codebase. Tighten the
+# baseline separately instead of mixing a broad style rewrite into other work.
+select = ["E9", "F63", "F7", "F82"]

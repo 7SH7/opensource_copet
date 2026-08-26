@@ -1,0 +1,42 @@
+tool_id: browser_sqlite
+display_name: Browser SQLite Inspector
+version_supported: "stdlib"
+
+category: browser_analysis
+subcategory: history_and_downloads
+
+applicable_evidence_types:
+  - browser_artifact
+
+platform:
+  - any
+
+input_format:
+  - any
+
+output_format: jsonl
+output_size_estimate: medium
+parallelizable: true
+estimated_runtime: short
+
+command_templates:
+  - name: "Inspect one browser SQLite database read-only"
+    template: "browser-sqlite {evidence_path}"
+    when: "The inventoried file is a Chromium or Firefox SQLite artifact."
+
+usage_description: |
+  Project-local, standard-library SQLite inspection for one inventoried browser
+  database at a time. It opens evidence in read-only/query-only mode and emits
+  bounded Chromium/Firefox history and Chromium download records as JSONL.
+
+suspicious_indicators:
+  - id: browser_suspicious_download
+    pattern: "browser_download target has an executable or script extension"
+    severity_baseline: medium
+    description: "A browser downloaded an executable or script that warrants validation."
+
+known_false_positives:
+  - "Approved software installers and administrator-downloaded scripts."
+
+reference_urls:
+  - https://www.sqlite.org/uri.html
