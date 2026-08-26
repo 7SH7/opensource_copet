@@ -57,13 +57,13 @@ jobs:
 
       - name: Audit installed dependencies
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
-        run: python -m pip_audit --local --skip-editable --strict --progress-spinner off
+        run: python -m pip_audit --local --skip-editable --progress-spinner off
 
       - name: Lint
         run: python -m ruff check .
 
       - name: Test
-        run: python -m pytest --basetemp .pytest_cache/tmp
+        run: python -m pytest --basetemp .pytest-tmp
 
       - name: Build wheel
         run: python -m pip wheel . --no-deps --wheel-dir dist

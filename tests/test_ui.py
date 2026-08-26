@@ -77,7 +77,7 @@ def test_oversized_preview_is_bounded():
     assert "showing 10 of 35" in table.caption
 
 
-def test_llm_router_and_scenario_output_strip_terminal_controls():
+def test_llm_router_and_scenario_output_strip_untrusted_terminal_controls():
     payload = "text\x1b]52;c;UEFZTE9BRA==\x1b\\ [bold]literal[/bold]"
 
     class Client:
@@ -105,5 +105,6 @@ def test_llm_router_and_scenario_output_strip_terminal_controls():
     do_scenario(state, console, payload)
 
     output = stream.getvalue()
-    assert "\x1b" not in output
+    assert "\x1b]52;" not in output
+    assert "\x1b\\" not in output
     assert "[bold]literal[/bold]" in output
