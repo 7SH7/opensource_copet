@@ -393,7 +393,6 @@ def _platform_ok(spec: ToolSpec) -> bool:
 
 def _spec_installed(spec: ToolSpec) -> bool:
     if spec.kind == "venv":
-        importlib_metadata.MetadataPathFinder.invalidate_caches()
         root = tools_bin_root() / spec.name
         return (
             _venv_executable(root, spec.name).is_file()
@@ -467,9 +466,8 @@ def _venv_requirement_installed(root: Path, requirement: str) -> bool:
     distribution = distribution.split("[", 1)[0]
     normalized = re.sub(r"[-_.]+", "-", distribution).casefold()
     try:
-        for installed in importlib_metadata.distributions(
-            path=[str(_venv_site_packages(root))]
-        ):
+        for metadata_path in _venv_site_packages(root).glob("*.dist-info"):
+            installed = importlib_metadata.Distribution.at(metadata_path)
             name = installed.metadata.get("Name", "")
             if re.sub(r"[-_.]+", "-", name).casefold() == normalized:
                 return installed.version == expected
