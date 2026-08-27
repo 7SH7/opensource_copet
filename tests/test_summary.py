@@ -134,8 +134,10 @@ def test_summary_llm_context_excludes_evidence_and_secrets(tmp_path):
     assert "raw_excerpt" not in prompt
     assert "Windows event log cleared" not in prompt
     assert "Event ID 104 records log clearing." not in prompt
-    assert "\x1b" not in stream.getvalue()
-    assert "[bold]literal[/bold]" in stream.getvalue()
+    output = stream.getvalue()
+    assert "\x1b]52;" not in output
+    assert "\x1b\\" not in output
+    assert "[bold]literal[/bold]" in output
 
 
 def test_summary_llm_failure_keeps_structured_fallback(tmp_path):
@@ -188,5 +190,6 @@ def test_summary_sanitizes_llm_failure_text(tmp_path):
     do_summary(state, console)
 
     output = stream.getvalue()
-    assert "\x1b" not in output
+    assert "\x1b]52;" not in output
+    assert "\x1b\\" not in output
     assert "[bold]literal[/bold]" in output

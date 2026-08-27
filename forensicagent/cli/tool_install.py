@@ -393,6 +393,7 @@ def _platform_ok(spec: ToolSpec) -> bool:
 
 def _spec_installed(spec: ToolSpec) -> bool:
     if spec.kind == "venv":
+        importlib_metadata.MetadataPathFinder.invalidate_caches()
         root = tools_bin_root() / spec.name
         return (
             _venv_executable(root, spec.name).is_file()

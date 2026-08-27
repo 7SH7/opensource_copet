@@ -113,7 +113,7 @@ _DISPATCH = {
 
 
 def _strip_surrogates(s: str) -> str:
-    """UTF-8 인코딩 불가능한 surrogate (\ud800-\udfff) 제거.
+    """UTF-8 인코딩 불가능한 surrogate (U+D800-U+DFFF) 제거.
 
     Windows 콘솔/파이프 + cp949 stdin 경계에서 한글이 mojibake 로 들어오면
     파이썬이 surrogateescape 로 마킹한다. 그대로 ollama HTTP body 에 실으면
