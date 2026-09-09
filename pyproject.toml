@@ -31,8 +31,8 @@ crawlers = ["requests>=2.31.0", "beautifulsoup4>=4.12.0"]
 dev = [
     "pytest>=8.0",
     "pytest-mock>=3.12",
-    "hypothesis==6.165.10",
-    "ruff==0.16.0",
+    "hypothesis==6.167.1",
+    "ruff==0.16.5",
     "pip-audit==2.10.1",
     "detect-secrets==1.5.0",
     "tomli>=2.0; python_version < '3.11'",
